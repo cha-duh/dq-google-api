@@ -11,7 +11,10 @@ import argparse
 # CONSTANTS
 API_URL = 'https://www.googleapis.com/books/v1/volumes'
 SECRET  = 'AIzaSyBKFOVhps_PAJaA5mq9n440F_ILdj8BCMM'
+AUTH = '&key=' + SECRET
+
 _SEARCH_ARGVAR = 'search_term'
+MAX_RESULTS = 40
 
 # result vars
 results = {}
@@ -40,32 +43,42 @@ def _validate_args(args):
         return "You must supply a search term."
     return None
 
-def format_request(query, start, maxRes):
+def format_query(q_args):
     '''compiles a request from a few simple components'''
-    
-    
- 
+    query = API_URL
+    for key in q_args:
+        if q_args[key]:
+            query += key + str(q_args[key])
+    query += AUTH
+    return query
+
 def main(argv):
     args = _parse_args(map(str, argv))
     err = _validate_args(args)
     if err is not None:
         return err
- 
-    # pull arg vals out of args
-    search_term = args[_SEARCH_ARGVAR]
-    intitle = args.intitle
-    inauthor = args.inauthor
-    inpublisher = args.inpublisher
-    subject = args.subject
-    query_args = [search_term, intitle, inauthor, inpublisher, subject]
+
+    print(args)
 
     # establish a starting point
     startIndex = 0
-    maxResults = 40
+
+    # pull arg vals out of args
+    query_args = {
+            'q=' : args[_SEARCH_ARGVAR],
+            '+intitle:' : args['intitle'],
+            '+inauthor:': args['inauthor'],
+            '+inpublisher:' : args['inpublisher'],
+            '+subject:' : args['subject'],
+            '&startIndex=': startIndex,
+            '&maxResults=': MAX_RESULTS
+            }
 
 
-
-    
+    # results = {}
+    q = format_query(query_args)
+    r = requests.get(q)
+    print(r.json())
 
     return 0
  
