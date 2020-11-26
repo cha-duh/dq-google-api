@@ -65,7 +65,7 @@ def main(argv):
 
     # pull arg vals out of args
     query_args = {
-            'q=' : args[_SEARCH_ARGVAR],
+            '?q=' : args[_SEARCH_ARGVAR],
             '+intitle:' : args['intitle'],
             '+inauthor:': args['inauthor'],
             '+inpublisher:' : args['inpublisher'],
@@ -78,8 +78,13 @@ def main(argv):
     # results = {}
     q = format_query(query_args)
     r = requests.get(q)
-    print(r.json())
-
+    content = {}
+    try :
+        content = r.json()
+    except :
+        _print_error('unable to get json from the api response')
+    
+    print(content)
     return 0
  
 if __name__ == "__main__":
