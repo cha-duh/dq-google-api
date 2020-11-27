@@ -87,6 +87,7 @@ def get_more_results(q_args, r):
     return r
 
 def analyze_results(r):
+    '''built top level metrics for the results from the api'''
     if 'items' in r:
         authors = {}
         analyzed = {
@@ -119,9 +120,13 @@ def display(results):
     items = results['items']
     index = 0
     display_num = 10
+
+    # main loop
     while viewing:
         table_content = [] 
         end_index = len(items) if index+display_num > len(items) else index+display_num
+        
+        # format results for viewing 
         for i in range(index, end_index):
             authors = 'no authors provided'
             title = 'no title provided'
@@ -139,6 +144,8 @@ def display(results):
         )
         print(table)
         holding=True
+
+        # secondary loop for user input
         while holding:
             user_input = input(
                     "Select an index above for more information, type 'back' or 'b' for the previous ten results, or just hit <enter> for the next ten results"
@@ -146,6 +153,10 @@ def display(results):
                     +"To quit, type 'quit' or 'q'"
                     +"\n"
             )
+
+            # enum schmenum, ifs for days!
+            # i considered refactoring this to an await_input() method
+            # this works cleanly, and is quite legible. sticking with it.
             if not user_input:
                 index=index+display_num
                 if index > len(items):
@@ -171,9 +182,6 @@ def display(results):
             else:
                 print('that entry was invalid. please try again.')
 
-def await_input(index):
-    
-    return
 
 def main(argv):
     args = _parse_args(map(str, argv))
@@ -197,15 +205,21 @@ def main(argv):
             MAXRES  : MAX_RESULTS
             }
 
+    # pull results out of the api
     results = get_results(query_args) 
+    
+    # compare expected results to actual
     num_res_expected = results['totalItems']
     num_res_actual = len(results['items'])
     print('expected ' + str(num_res_expected) + ' results')
     print('successfully retreived ' + str(num_res_actual))
     
+    # quick analysis on all results
     analysis = analyze_results(results)
     print('results span from ' + analysis['minDate'].isoformat() + ' to ' + analysis['maxDate'].isoformat())
     print('in this timeframe, ' + analysis['author'][0] + ' contributed the most works: ' + str(analysis['author'][1]))
+
+    # loop over results for inspection
     display(results)
 
     return 0
