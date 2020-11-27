@@ -10,6 +10,8 @@ import argparse
 
 from dateutil.parser import parse
 from datetime import date
+from terminal_table import Table
+from ansi_colours import AnsiColours as Colour
 
 # CONSTANTS
 API_URL = 'https://www.googleapis.com/books/v1/volumes'
@@ -113,6 +115,64 @@ def analyze_results(r):
 
 def display(results):
     '''loop until the user is done scoping out their books'''
+    viewing = True
+    items = results['items']
+    index = 0
+    display_num = 10
+    while viewing:
+        table_content = [] 
+        end_index = len(items) if index+display_num > len(items) else index+display_num
+        for i in range(index, end_index):
+            authors = 'no authors provided'
+            title = 'no title provided'
+            if 'authors' in items[i]['volumeInfo']:
+                authors = ', '.join(items[i]['volumeInfo']['authors'])
+            if 'title' in items[i]['volumeInfo']:
+                title = items[i]['volumeInfo']['title']
+            table_content.append( (i, authors, title) )
+
+        table = Table.create(
+            table_content,
+            ("ID", "Author(s)", "Title"),
+            header_colour=Colour.cyan,
+            column_colours=(Colour.green,)
+        )
+        print(table)
+        holding=True
+        while holding:
+            user_input = input(
+                    "Select an index above for more information, type 'back' or 'b' for the previous ten results, or just hit <enter> for the next ten results"
+                    + "\n"
+                    +"To quit, type 'quit' or 'q'"
+                    +"\n"
+            )
+            if not user_input:
+                index=index+display_num
+                if index > len(items):
+                    index=0
+                holding=False
+                break
+            elif user_input is 'b' or user_input is 'back':
+                index=index-display_num
+                if index < 0:
+                    index=len(items)-display_num
+                holding=False
+                break
+            elif user_input is 'q' or user_input is 'quit':
+                holding=False
+                viewing=False
+                break
+            elif user_input.isdigit() and int(user_input) in range(index,index+display_num):
+                selection = items[int(user_input)]['volumeInfo']
+                if 'description' in selection:
+                    print(selection['description'])
+                else:
+                    print('no description for this volume')
+            else:
+                print('that entry was invalid. please try again.')
+
+def await_input(index):
+    
     return
 
 def main(argv):
