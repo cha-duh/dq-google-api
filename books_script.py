@@ -10,6 +10,8 @@ import argparse
 
 from dateutil.parser import parse
 from datetime import date
+from terminal_table import Table
+from ansi_colours import AnsiColours as Colour
 
 # CONSTANTS
 API_URL = 'https://www.googleapis.com/books/v1/volumes'
@@ -85,6 +87,7 @@ def get_more_results(q_args, r):
     return r
 
 def analyze_results(r):
+    '''built top level metrics for the results from the api'''
     if 'items' in r:
         authors = {}
         analyzed = {
@@ -113,7 +116,72 @@ def analyze_results(r):
 
 def display(results):
     '''loop until the user is done scoping out their books'''
-    return
+    viewing = True
+    items = results['items']
+    index = 0
+    display_num = 10
+
+    # main loop
+    while viewing:
+        table_content = [] 
+        end_index = len(items) if index+display_num > len(items) else index+display_num
+        
+        # format results for viewing 
+        for i in range(index, end_index):
+            authors = 'no authors provided'
+            title = 'no title provided'
+            if 'authors' in items[i]['volumeInfo']:
+                authors = ', '.join(items[i]['volumeInfo']['authors'])
+            if 'title' in items[i]['volumeInfo']:
+                title = items[i]['volumeInfo']['title']
+            table_content.append( (i, authors, title) )
+
+        table = Table.create(
+            table_content,
+            ("ID", "Author(s)", "Title"),
+            header_colour=Colour.cyan,
+            column_colours=(Colour.green,)
+        )
+        print(table)
+        holding=True
+
+        # secondary loop for user input
+        while holding:
+            user_input = input(
+                    "Select an index above for more information, type 'back' or 'b' for the previous ten results, or just hit <enter> for the next ten results"
+                    + "\n"
+                    +"To quit, type 'quit' or 'q'"
+                    +"\n"
+            )
+
+            # enum schmenum, ifs for days!
+            # i considered refactoring this to an await_input() method
+            # this works cleanly, and is quite legible. sticking with it.
+            if not user_input:
+                index=index+display_num
+                if index > len(items):
+                    index=0
+                holding=False
+                break
+            elif user_input is 'b' or user_input is 'back':
+                index=index-display_num
+                if index < 0:
+                    index=len(items)-display_num
+                holding=False
+                break
+            elif user_input is 'q' or user_input is 'quit':
+                holding=False
+                viewing=False
+                break
+            elif user_input.isdigit() and int(user_input) in range(index,index+display_num):
+                selection = items[int(user_input)]['volumeInfo']
+                if 'description' in selection:
+                    print(selection['description'])
+                else:
+                    print('no description for this volume')
+            else:
+                print('that entry was invalid. please try again.')
+
 
 def main(argv):
     args = _parse_args(map(str, argv))
@@ -137,15 +205,21 @@ def main(argv):
             MAXRES  : MAX_RESULTS
             }
 
+    # pull results out of the api
     results = get_results(query_args) 
+    
+    # compare expected results to actual
     num_res_expected = results['totalItems']
     num_res_actual = len(results['items'])
     print('expected ' + str(num_res_expected) + ' results')
     print('successfully retreived ' + str(num_res_actual))
     
+    # quick analysis on all results
     analysis = analyze_results(results)
     print('results span from ' + analysis['minDate'].isoformat() + ' to ' + analysis['maxDate'].isoformat())
     print('in this timeframe, ' + analysis['author'][0] + ' contributed the most works: ' + str(analysis['author'][1]))
+
+    # loop over results for inspection
     display(results)
 
     return 0
