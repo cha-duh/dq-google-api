@@ -9,6 +9,11 @@ beyond that, i believe everything else is core. check imports for unfamiliar lib
 ## limitations
 I think I'm getting rate limited by Google's API. Large queries only let me get a few pages in before it starts returning null :/. This is a clean example of how I would address what I believe is the intent below re:overall analysis and pagination without the front end.
 
+## usage
+I would suggest taking a look at the help option: `python3 books_script.py -h`
+This will give you all of your options. Briefly, you must supply a search term (positional) and you can also supply any of: -h for help, -t for intitle filter, -a for inauthor filter, -p for inpublisher, or -s for subject filters.
+The script will prompt you for further input to paginate or quit.
+
 ## Google Books API Search
 
 Create an app using any language you prefer, that searches the Google Books API using the
