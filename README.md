@@ -6,6 +6,9 @@ coding challenge for deque: google books api
 
 beyond that, i believe everything else is core. check imports for unfamiliar libraries 
 
+## limitations
+I think I'm getting rate limited by Google's API. Large queries only let me get a few pages in before it starts returning null :/. This is a clean example of how I would address what I believe is the intent below re:overall analysis and pagination without the front end.
+
 ## Google Books API Search
 
 Create an app using any language you prefer, that searches the Google Books API using the
