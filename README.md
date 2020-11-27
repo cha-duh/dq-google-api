@@ -1,7 +1,12 @@
 # dq-google-api
 coding challenge for deque: google books api
 
-##Google Books API Search
+## requirements
+`pip install terminal_table`
+
+beyond that, i believe everything else is core. check imports for unfamiliar libraries 
+
+## Google Books API Search
 
 Create an app using any language you prefer, that searches the Google Books API using the
 following requirements:
